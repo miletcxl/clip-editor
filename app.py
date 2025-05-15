@@ -10,6 +10,9 @@ from PIL import Image
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 import imageio
 imageio.plugins.ffmpeg.download()
+import streamlit as st
+import sys
+st.write(f"🐍 当前 Python 版本: {sys.version}")
 
 # 解决 OpenMP 冲突
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
