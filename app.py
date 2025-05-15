@@ -11,10 +11,8 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips
 import imageio
 from sklearn.neighbors import NearestNeighbors
 
-imageio.plugins.ffmpeg.download()
+# imageio.plugins.ffmpeg.download()
 
-import sys
-st.write(f"🐍 当前 Python 版本: {sys.version}")
 
 # 解决 OpenMP 冲突
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
