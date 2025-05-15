@@ -17,3 +17,4 @@
 
 ## 依赖安装
 
+requirements.txt
