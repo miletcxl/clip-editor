@@ -5,5 +5,7 @@ moviepy
 faiss-cpu
 Pillow
 numpy
-git+https://github.com/openai/CLIP.git
+imageio
+imageio-ffmpeg
 streamlit
+git+https://github.com/openai/CLIP.git
