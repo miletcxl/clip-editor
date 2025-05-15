@@ -8,6 +8,8 @@ import json
 import numpy as np
 from PIL import Image
 from moviepy.editor import VideoFileClip, concatenate_videoclips
+import imageio
+imageio.plugins.ffmpeg.download()
 
 # 解决 OpenMP 冲突
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
