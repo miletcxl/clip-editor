@@ -6,3 +6,4 @@ faiss-cpu
 Pillow
 numpy
 git+https://github.com/openai/CLIP.git
+streamlit

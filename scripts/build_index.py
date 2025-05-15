@@ -10,7 +10,7 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips
 
 
 device = "cpu"
-model, preprocess = clip.load("ViT-B/32", device=device)
+model, preprocess = clip.load("ViT-B/16", device=device)
 
 video_dir = "assets"
 index_meta = []

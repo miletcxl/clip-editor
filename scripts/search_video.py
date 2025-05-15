@@ -4,9 +4,12 @@ import torch
 import faiss
 import json
 import numpy as np
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 
 device = "cpu"
-model, preprocess = clip.load("ViT-B/32", device=device)
+model, preprocess = clip.load("ViT-B/16", device=device)
 
 # 输入查询
 query = input("请输入你想找的场景描述：")
