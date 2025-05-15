@@ -3,14 +3,16 @@ import streamlit as st
 import os
 import clip
 import torch
-import faiss
 import json
 import numpy as np
+import joblib
 from PIL import Image
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 import imageio
+from sklearn.neighbors import NearestNeighbors
+
 imageio.plugins.ffmpeg.download()
-import streamlit as st
+
 import sys
 st.write(f"🐍 当前 Python 版本: {sys.version}")
 
@@ -30,23 +32,22 @@ st.header("1️⃣ 上传视频素材")
 assets_path = "assets"
 os.makedirs(assets_path, exist_ok=True)
 
-# 🔄 自动清空之前的素材
+# 自动清空旧素材
 for f in os.listdir(assets_path):
     os.remove(os.path.join(assets_path, f))
 st.info("🧹 已清空旧视频素材")
 
-# ⬆️ 上传视频文件
+# 上传视频文件
 uploaded_files = st.file_uploader("选择 MP4 视频", type=["mp4"], accept_multiple_files=True)
 
-# 💾 保存视频文件
+# 保存视频
 for file in uploaded_files:
     save_path = os.path.join(assets_path, file.name)
     with open(save_path, "wb") as f:
         f.write(file.read())
     st.success(f"✅ 成功保存: {file.name}")
 
-
-# 🧠 检查是否需要重新构建索引
+# 是否需要重新索引
 def needs_reindex(assets_dir, meta_path):
     if not os.path.exists(meta_path):
         return True
@@ -59,7 +60,7 @@ def needs_reindex(assets_dir, meta_path):
 if needs_reindex(assets_path, "index/meta.json"):
     st.warning("⚠️ 检测到视频素材变更，请点击『🔍 构建索引』重新生成索引。")
 
-# 构建索引按钮
+# 构建索引
 if st.button("🔍 构建索引"):
     index_meta = []
     vectors = []
@@ -69,7 +70,6 @@ if st.button("🔍 构建索引"):
             continue
         path = os.path.join(assets_path, filename)
 
-        # 🛡️ 添加 try-except 防止坏文件导致程序崩溃
         try:
             video = VideoFileClip(path)
             duration = int(video.duration)
@@ -97,31 +97,35 @@ if st.button("🔍 构建索引"):
     else:
         os.makedirs("index", exist_ok=True)
         vectors = np.array(vectors).astype("float32")
-        faiss_index = faiss.IndexFlatL2(vectors.shape[1])
-        faiss_index.add(vectors)
-        faiss.write_index(faiss_index, "index/clip.index")
+
+        nn = NearestNeighbors(n_neighbors=3, algorithm="auto", metric="euclidean")
+        nn.fit(vectors)
+
+        joblib.dump(nn, "index/clip_nn.pkl")
+        np.save("index/vectors.npy", vectors)
         with open("index/meta.json", "w") as f:
             json.dump(index_meta, f)
+
         st.success(f"✅ 索引构建完成，共索引 {len(index_meta)} 帧")
 
-
-# 输入搜索文本
+# 文本查询
 st.header("2️⃣ 输入文字，搜索片段")
 query = st.text_input("请输入你想搜索的视频描述（例如：a smiling woman）")
 
-# 生成剪辑
+# 生成剪辑视频
 if st.button("✂️ 生成剪辑视频"):
-    if not os.path.exists("index/clip.index"):
+    if not os.path.exists("index/clip_nn.pkl"):
         st.error("❌ 请先构建索引")
     else:
-        index = faiss.read_index("index/clip.index")
+        nn = joblib.load("index/clip_nn.pkl")
+        vectors = np.load("index/vectors.npy")
         with open("index/meta.json", "r") as f:
             meta = json.load(f)
 
         with torch.no_grad():
             text_features = model.encode_text(clip.tokenize([query]).to(device)).cpu().numpy()
 
-        D, I = index.search(text_features, 3)
+        D, I = nn.kneighbors(text_features, return_distance=True)
         selected = [meta[i] for i in I[0]]
 
         with open("index/result.json", "w") as f:
