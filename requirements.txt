@@ -10,9 +10,12 @@ decorator==4.4.2
 tqdm==4.66.1
 proglog==0.1.10
 
-faiss-cpu==1.7.2
+# 替代 faiss-cpu
+scikit-learn==1.4.2
+joblib==1.4.0
+
 Pillow==9.5.0
 numpy==1.24.4
 
-# 使用 pip URL 安装 openai/CLIP
+# 使用 Git 安装 OpenAI CLIP
 git+https://github.com/openai/CLIP.git
